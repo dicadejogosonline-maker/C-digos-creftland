@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Shazam — Craftland & Free Fire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config={
+            darkMode:'class',
+            theme:{
+                extend:{
+                    colors:{
+                        fundo:'#121212',fundoClaro:'#f8f9fa',card:'#1E1E1E',cardClaro:'#ffffff',
+                        roxo:'#9C27B0',amarelo:'#FFCC00',verde:'#37AA42',vermelho:'#FF3333',
+                        botaoFundo:'#D8C8C0',textoBotao:'#2B2420',textoClaro:'#212121',textoEscuro:'#f1f1f1'
+                    },
+                    fontFamily:{sans:['Inter','system-ui','sans-serif']}
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities{
+            .circulo{@apply w-[74px] h-[74px] md:w-[90px] md:h-[90px] rounded-full bg-[#2A2A2A] dark:bg-[#e2e2e2] flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-amarelo/80 hover:scale-105 transition-all duration-200;}
+            .glow-shazam{@apply relative;}
+            .glow-shazam::before{content:"";position:absolute;inset:-2px;background:linear-gradient(90deg,#ffcc00,#ff00ff,#00ccff);background-size:200% 200%;border-radius:inherit;z-index:-1;filter:blur(4px);animation:shazamGlow 10s linear infinite;}
+            .glow-busca{@apply relative rounded-xl;}
+            .glow-busca::before{content:"";position:absolute;inset:-2px;background:linear-gradient(90deg,#ff4081,#ffc107,#76ff03,#00bcd4);background-size:300% 300%;border-radius:inherit;z-index:-1;filter:blur(3px);animation:rgbAnim 12s linear infinite;}
+            .glow-campo{@apply relative rounded-xl;}
+            .glow-campo::before{content:"";position:absolute;inset:-2px;background:linear-gradient(45deg,#ffcc00,#ff9800);background-size:200% 200%;border-radius:inherit;z-index:-1;filter:blur(2px);animation:rgbAnim 8s linear infinite;}
+            @keyframes rgbAnim{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+            @keyframes shazamGlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+            .modal-card{@apply bg-card/95 dark:bg-cardClaro/95 backdrop-blur-sm rounded-t-[28px] md:rounded-[28px] max-w-md w-full overflow-hidden shadow-xl;}
+            .btn-config{@apply fixed top-4 right-4 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 flex items-center justify-center z-40 transition-all cursor-pointer;}
+            .btn-video{@apply w-14 h-14 rounded-full bg-[#FF0000]/90 hover:bg-[#FF0000] flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-all cursor-pointer;}
+            .input-codigo{@apply w-full bg-fundo/90 dark:bg-fundoClaro/90 border border-amarelo/30 rounded-xl py-3.5 px-5 text-white dark:text-black text-lg placeholder:text-gray-400 focus:outline-none focus:border-amarelo;}
+            .btn-liberar{@apply w-full bg-gradient-to-r from-amarelo to-[#ffd633] hover:from-[#ffd633] hover:to-amarelo text-black font-bold py-3.5 rounded-xl text-lg transition-all shadow-lg cursor-pointer;}
+            .btn-fechar{@apply absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 hover:bg-vermelho/80 flex items-center justify-center text-white dark:text-black text-xl transition-all z-10 cursor-pointer;}
+            .foto-item{@apply max-h-[88%] max-w-[88%] object-contain drop-shadow-lg rounded-xl p-2 bg-black/20;}
+            .icone-lindo{@apply w-full h-full object-cover;}
+            .tela-entrada{@apply fixed inset-0 z-[999] bg-fundo dark:bg-fundoClaro flex flex-col items-center justify-center transition-all duration-700 ease-out;}
+            .tela-entrada.sair{@apply opacity-0 -translate-y-6 pointer-events-none;}
+            .titulo-entrada{@apply text-[clamp(2.5rem,8vw,5rem)] font-black text-transparent bg-clip-text bg-gradient-to-r from-amarelo via-roxo to-[#00ccff] animate-pulse;}
+            .barra-carregamento{@apply w-64 h-2 bg-white/20 dark:bg-black/20 rounded-full mt-8 overflow-hidden;}
+            .progresso{@apply h-full w-0 bg-gradient-to-r from-amarelo to-roxo rounded-full transition-all duration-1000 ease-out;}
+            .texto-entrada{@apply text-gray-400 dark:text-gray-600 mt-4 text-lg tracking-widest;}
+            /* Imagem na tela de carga */
+            .img-carga{@apply max-w-[220px] md:max-w-[280px] w-full h-auto mb-6 rounded-xl shadow-lg object-contain;}
+        }
+    </style>
+</head>
+<body class="bg-fundo dark:bg-fundoClaro text-textoEscuro dark:text-textoClaro min-h-screen font-sans px-4 py-6 max-w-5xl mx-auto transition-colors duration-300">
+
+    <!-- ✅ TELA DE CARREGAMENTO COM IMAGEM -->
+    <div id="telaEntrada" class="tela-entrada">
+        <img src="carregamento-shazam.png" alt="Shazam — Craftland & Free Fire" class="img-carga">
+        <h1 class="titulo-entrada glow-shazam">SHAZAM</h1>
+        <p class="texto-entrada">Bem‑vindo! Preparando tutoriais e interfaces...</p>
+        <div class="barra-carregamento"><div id="progressoBarra" class="progresso"></div></div>
+    </div>
+
+    <button class="btn-config" onclick="abrirConfig()"><i class="fa fa-cog text-lg"></i></button>
+
+    <!-- Tela inicial SEM imagem -->
+    <header class="mb-8 text-center">
+        <h1 class="text-[clamp(1.8rem,4vw,2.4rem)] font-bold glow-shazam inline-block px-5 py-3 rounded-2xl">
+            Shazam — Database
+        </h1>
+        <p class="text-gray-400 dark:text-gray-600 text-sm mt-2">
+            Aqui você encontra as melhores interfaces para Craftland, tutoriais e recursos exclusivos.
+        </p>
+    </header>
+
+    <div class="relative mb-12 glow-busca">
+        <input type="text" id="busca" placeholder="Pesquisar itens..." class="w-full bg-card dark:bg-cardClaro border border-white/10 dark:border-black/10 rounded-xl py-3.5 px-5 pr-14 text-white dark:text-black placeholder:text-gray-400 focus:outline-none">
+        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amarelo transition"><i class="fa fa-search text-xl"></i></button>
+    </div>
+
+    <div class="flex justify-center mb-12"><div class="px-8 py-3 rounded-xl bg-white dark:bg-black text-fundo dark:text-fundoClaro font-semibold shadow-md">ITENS</div></div>
+
+    <div id="lista-itens" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-y-10 gap-x-6 mb-12"><p class="col-span-full text-center text-gray-400 dark:text-gray-600 py-10">Carregando itens...</p></div>
+
+    <div id="modalItem" class="fixed inset-0 bg-black/80 dark:bg-white/80 flex items-end md:items-center justify-center z-50 hidden">
+        <div class="modal-card glow-shazam relative">
+            <button onclick="fecharModal()" class="btn-fechar">×</button>
+            <div class="w-full h-[320px] flex items-center justify-center bg-gradient-to-b from-[#25201D] dark:from-[#e0e0e0] to-[#121212] dark:to-[#f8f9fa] relative group">
+                <img id="imgModal" src="" alt="" class="foto-item" loading="lazy">
+                <button id="btnVideo" class="absolute bottom-5 right-5 btn-video hidden" title="Ver tutorial deste item"><i class="fa fa-youtube-play"></i></button>
+            </div>
+            <div class="p-7 space-y-5">
+                <h3 id="nomeItemModal" class="text-2xl font-extrabold uppercase tracking-wider text-center">NOME DO ITEM</h3>
+                <p class="text-vermelho font-semibold flex items-center justify-center gap-2 text-lg">
+                    <i class="fa fa-lock"></i> CÓDIGO BLOQUEADO
+                </p>
+
+                <div id="areaCodigoEntrada" class="space-y-4">
+                    <div class="relative glow-campo rounded-xl">
+                        <input type="text" id="codigoEntrada" placeholder="Digite o código de liberação" class="input-codigo">
+                    </div>
+                    <button onclick="verificarCodigo()" class="btn-liberar">LIBERAR</button>
+                </div>
+
+                <div id="codigoLiberado" class="hidden mt-4">
+                    <p class="text-verde text-base flex items-center gap-2 justify-center"><i class="fa fa-check-circle"></i> ✅ LIBERADO</p>
+                    <div class="bg-fundo/80 dark:bg-fundoClaro/80 p-4 rounded-xl font-mono text-amarelo break-all text-base my-3 border border-amarelo/20 text-center" id="codigoExibido"></div>
+                    <button onclick="copiarCodigo()" class="w-full bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 text-white dark:text-black py-2.5 rounded-xl text-base transition-all cursor-pointer">📋 Copiar código</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalVideo" class="fixed inset-0 bg-black/85 dark:bg-white/85 flex items-center justify-center z-[65] hidden p-4">
+        <div class="bg-card dark:bg-cardClaro rounded-2xl w-full max-w-[360px] overflow-hidden shadow-xl border border-[#FF0000]/30 relative">
+            <button onclick="fecharVideo()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 dark:bg-black/10 hover:bg-vermelho/80 flex items-center justify-center text-white dark:text-black text-lg z-10 cursor-pointer">×</button>
+            <div class="p-4 flex justify-between items-center bg-[#FF0000]/10 border-b border-white/10 dark:border-black/10">
+                <span class="font-bold text-lg flex items-center gap-2"><i class="fa fa-youtube-play text-[#FF0000]"></i> Tutorial deste item</span>
+            </div>
+            <div class="aspect-video bg-black/70 dark:bg-white/70 overflow-hidden rounded-b-lg">
+                <iframe id="playerVideo" width="100%" height="100%" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" src=""></iframe>
+            </div>
+            <div class="text-center text-sm text-gray-300 dark:text-gray-700 p-3 bg-black/40 dark:bg-white/40">
+                <a href="https://www.youtube.com/@SHAZAM2836" target="_blank" class="text-amarelo hover:underline font-semibold">Ver canal completo</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="telaConfig" class="fixed inset-0 bg-black/85 dark:bg-white/85 flex items-center justify-center z-[70] hidden p-4">
+        <div class="bg-card dark:bg-cardClaro rounded-2xl w-full max-w-sm p-7 shadow-xl glow-shazam relative">
+            <button onclick="fecharConfig()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 dark:bg-black/10 hover:bg-vermelho/80 flex items-center justify-center text-white dark:text-black text-lg cursor-pointer">×</button>
+            <h3 class="text-2xl font-bold mb-2 text-center">⚙️ CONFIGURAÇÕES</h3>
+            <p class="text-center text-amarelo font-semibold text-lg mb-6">Site criado por Shazam</p>
+            <button onclick="alternarTema()" class="w-full mb-6 flex items-center justify-center gap-3 bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 p-3 rounded-xl transition-all">
+                <i class="fa fa-adjust text-xl"></i><span id="textoTema">Tela: Preta</span>
+            </button>
+            <div class="space-y-4">
+                <a href="https://discord.gg/7Rv5cTBMV" target="_blank" class="flex items-center gap-4 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 p-4 rounded-xl transition-all">
+                    <i class="fa fa-discord text-[#5865F2] text-3xl"></i><span class="text-white dark:text-black text-lg">Servidor do Discord</span>
+                </a>
+                <a href="https://www.youtube.com/@SHAZAM2836" target="_blank" class="flex items-center gap-4 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 p-4 rounded-xl transition-all">
+                    <i class="fa fa-youtube-play text-[#FF0000] text-3xl"></i><span class="text-white dark:text-black text-lg">Canal do YouTube</span>
+                </a>
+            </div>
+            <button onclick="fecharConfig()" class="mt-8 w-full bg-botaoFundo text-textoBotao py-3 rounded-xl font-bold hover:brightness-90 transition-all cursor-pointer">FECHAR</button>
+        </div>
+    </div>
+
+    <div id="aviso" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-verde text-white px-6 py-2.5 rounded-xl shadow-lg hidden z-50 text-base">✅ Feito!</div>
+
+    <script>
+        const ID_PLANILHA="1qVFFrI8lmNO1BFKjVzun0c1k_iBXeT5-8ooxPkSxUG4", ABA="Página1";
+        let dadosPlanilha=[], itemAtual={};
+
+        window.addEventListener('load',()=>{
+            const barra=document.getElementById('progressoBarra');
+            setTimeout(()=>barra.style.width='100%',150);
+            setTimeout(()=>{
+                document.getElementById('telaEntrada').classList.add('sair');
+                fetch(`https://opensheet.elk.sh/${ID_PLANILHA}/${ABA}`).then(r=>r.json()).then(d=>{dadosPlanilha=d.filter(i=>i.nome);renderizarItens();});
+            },1600);
+            document.getElementById("busca").addEventListener("input",renderizarItens);
+        });
+
+        function carregarTema(){
+            if(localStorage.getItem('tema')==='claro'){document.documentElement.classList.remove('dark');document.getElementById('textoTema').textContent='Tela: Branca';}
+            else{document.documentElement.classList.add('dark');document.getElementById('textoTema').textContent='Tela: Preta';}
+        }
+        function alternarTema(){
+            const d=document.documentElement.classList.toggle('dark');
+            localStorage.setItem('tema',d?'escuro':'claro');
+            document.getElementById('textoTema').textContent=d?'Tela: Preta':'Tela: Branca';
+        }
+        carregarTema();
+
+        function renderizarItens(){
+            const b=document.getElementById("busca").value.toLowerCase().trim(),c=document.getElementById("lista-itens");
+            c.innerHTML="";
+            const f=dadosPlanilha.filter(l=>l.nome.toLowerCase().includes(b));
+            if(!f.length){c.innerHTML=`<p class="col-span-full text-center text-gray-400 dark:text-gray-600 py-10">Nenhum item encontrado.</p>`;return;}
+            f.forEach((l,i)=>{
+                const img=l.url?.trim()||"https://cdn-icons-png.flaticon.com/512/1059/105917.png",d=document.createElement("div");
+                d.className="flex flex-col items-center gap-2 cursor-pointer";d.onclick=()=>abrirModal(l,i);
+                d.innerHTML=`<div class="circulo glow-shazam"><img src="${img}" alt="${l.nome}" class="icone-lindo" loading="lazy"></div><span class="text-[11px] md:text-[12px] text-center text-gray-200 dark:text-gray-800 max-w-[85px] leading-snug font-medium">${l.nome}</span>`;
+                c.appendChild(d);
+            });
+        }
+
+        function abrirModal(l,i){
+            itemAtual={...l,i};
+            const lib=JSON.parse(localStorage.getItem("libShazam")||"{}"),ok=lib[`item_${i}`];
+            
+            document.getElementById("imgModal").src=l.url||"";
+            document.getElementById("nomeItemModal").textContent=l.nome||"ITEM SEM NOME";
+            document.getElementById("codigoEntrada").value="";
+
+            document.querySelector(".text-vermelho").classList.remove("hidden");
+            document.getElementById("areaCodigoEntrada").classList.remove("hidden");
+            document.getElementById("codigoLiberado").classList.add("hidden");
+
+            if(ok){
+                document.querySelector(".text-vermelho").classList.add("hidden");
+                document.getElementById("areaCodigoEntrada").classList.add("hidden");
+                document.getElementById("codigoLiberado").classList.remove("hidden");
+                document.getElementById("codigoExibido").textContent=l.codigo||"—";
+            }
+
+            const btnV=document.getElementById("btnVideo"),temV=l.video_url&&l.video_url.trim()!=="";
+            btnV.classList.toggle("hidden",!temV);btnV.onclick=null;
+            if(temV){
+                let u=l.video_url.trim();
+                if(u.includes("youtube.com/watch"))u="https://www.youtube.com/embed/"+u.split("v=")[1].split("&")[0];
+                else if(u.includes("youtu.be/"))u="https://www.youtube.com/embed/"+u.split("youtu.be/")[1].split("?")[0];
+                btnV.onclick=()=>{document.getElementById("playerVideo").src=u;document.getElementById("modalVideo").classList.remove("hidden");};
+            }
+            document.getElementById("modalItem").classList.remove("hidden");
+        }
+
+        function fecharModal(){document.getElementById("modalItem").classList.add("hidden");}
+        function fecharVideo(){document.getElementById("modalVideo").classList.add("hidden");document.getElementById("playerVideo").src="";}
+        function abrirConfig(){document.getElementById("telaConfig").classList.remove("hidden");}
+        function fecharConfig(){document.getElementById("telaConfig").classList.add("hidden");}
+
+        function verificarCodigo(){
+            const d=document.getElementById("codigoEntrada").value.trim(),c=itemAtual.codigo_liberacao?.trim();
+            if(d===c&&c){
+                const lib=JSON.parse(localStorage.getItem("libShazam")||"{}");lib[`item_${itemAtual.indice}`]=true;
+                localStorage.setItem("libShazam",JSON.stringify(lib));
+
+                document.querySelector(".text-vermelho").classList.add("hidden");
+                document.getElementById("areaCodigoEntrada").classList.add("hidden");
+                document.getElementById("codigoLiberado").classList.remove("hidden");
+                document.getElementById("codigoExibido").textContent=itemAtual.codigo||"—";
+                mostrarAviso("✅ Liberado com sucesso!");
+            }else mostrarAviso("❌ Código incorreto",true);
+        }
+
+        function copiarCodigo(){navigator.clipboard.writeText(document.getElementById("codigoExibido").textContent);mostrarAviso("📋 Código copiado!");}
+        function mostrarAviso(t,e=false){
+            const av=document.getElementById("aviso");av.textContent=t;
+            av.className=`fixed bottom-8 left-1/2 -translate-x-1/2 ${e?'bg-vermelho':'bg-verde'} text-white px-6 py-2.5 rounded-xl shadow-lg hidden z-50 text-base`;
+            av.classList.remove("hidden");setTimeout(()=>av.classList.add("hidden"),2000);
+        }
+
+        ["modalItem","modalVideo","telaConfig"].forEach(id=>{
+            document.getElementById(id).addEventListener("click",ev=>ev.target.id===id&&(ev.target.id==="modalVideo"?fecharVideo():ev.target.id==="telaConfig"?fecharConfig():fecharModal()));
+        });
+    </script>
+</body>
+
