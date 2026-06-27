@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shazam — Craftland & Free Fire</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        fundoEscuro: '#121212',
+                        fundoClaro: '#F8F9FA',
+                        cardEscuro: '#1E1E1E',
+                        cardClaro: '#FFFFFF',
+                        roxoNeon: '#D400FF',
+                        rosaNeon: '#FF2E99',
+                        laranjaNeon: '#FF7A29',
+                        verdeNeon: '#39FF73',
+                        vermelho: '#FF3333',
+                        amarelo: '#FFCC00',
+                        azulMeta: '#3B82F6',
+                        youtube: '#FF0000',
+                        discord: '#5865F2',
+                        textoEscuro: '#E0E0E0',
+                        textoClaro: '#212121',
+                        cinza: '#333333',
+                        cinzaClaro: '#E5E7EB'
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            @keyframes suaveGlow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+
+            .cabecalho-glow {
+                background: linear-gradient(90deg, #FF2E99, #D400FF);
+                background-size: 200% 200%;
+                animation: suaveGlow 8s ease infinite;
+                box-shadow: 0 0 15px rgba(255, 46, 153, 0.4);
+            }
+
+            .cabecalho-sem-glow {
+                background: linear-gradient(90deg, #FF2E99, #D400FF);
+                box-shadow: none;
+                animation: none;
+            }
+
+            .pesquisa-glow {
+                box-shadow: 0 0 8px rgba(57, 255, 115, 0.3);
+            }
+
+            .pesquisa-sem-glow {
+                box-shadow: none;
+            }
+
+            .item-glow {
+                box-shadow: 0 0 4px rgba(212, 0, 255, 0.2);
+                transition: all 0.2s ease;
+            }
+            .item-glow:hover {
+                box-shadow: 0 0 8px rgba(212, 0, 255, 0.4);
+                transform: scale(1.05);
+            }
+
+            .item-sem-glow {
+                box-shadow: none;
+            }
+            .item-sem-glow:hover {
+                box-shadow: none;
+                transform: scale(1.03);
+            }
+
+            .item-indisponivel {
+                opacity: 0.55;
+                filter: grayscale(70%);
+            }
+
+            .passo-feito {
+                background: rgba(57, 255, 115, 0.15);
+                border-color: #39FF73 !important;
+            }
+
+            .tela-entrada {
+                position: fixed;
+                inset: 0;
+                z-index: 999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.6s ease;
+            }
+            .tela-entrada.sair {
+                opacity: 0;
+                transform: translateY(-10px);
+                pointer-events: none;
+            }
+
+            .btn-fechar-modal {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(0,0,0,0.7);
+                color: #fff;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+            .btn-fechar-modal:hover {
+                background: #FF3333;
+            }
+
+            .nome-item {
+                max-width: 64px;
+                text-align: center;
+                font-size: 11px;
+                line-height: 1.2;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+            }
+
+            .barra-meta {
+                height: 8px;
+                border-radius: 4px;
+                background: rgba(255,255,255,0.1);
+                overflow: hidden;
+            }
+            .progresso-meta {
+                height: 100%;
+                background: linear-gradient(90deg, #3B82F6, #22D3EE);
+                transition: width 0.5s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-fundoEscuro dark:bg-fundoClaro text-textoEscuro dark:text-textoClaro min-h-screen font-sans px-4 py-4 max-w-md mx-auto transition-colors duration-300">
+
+    <div id="telaEntrada" class="tela-entrada bg-fundoEscuro dark:bg-fundoClaro">
+        <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rosaNeon to-roxoNeon mb-6">
+            Shazam Tutoriais
+        </h1>
+        <div class="w-64 h-2 bg-cinza/30 dark:bg-cinzaClaro/50 rounded-full overflow-hidden mb-3">
+            <div id="barraProgresso" class="h-full bg-gradient-to-r from-verdeNeon to-roxoNeon rounded-full w-0 transition-all duration-200"></div>
+        </div>
+        <p id="textoPorcentagem" class="text-lg font-medium text-verdeNeon">0%</p>
+    </div>
+
+    <div id="cabecalho" class="cabecalho-glow rounded-2xl p-4 mb-5 relative">
+        <h1 class="text-xl md:text-2xl font-bold text-white text-center">Shazam — Database</h1>
+        <p class="text-center text-white/80 mt-1 text-sm">
+            Aqui você encontra as melhores interfaces para Craftland, tutoriais e recursos exclusivos
+        </p>
+        <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white" onclick="abrirConfig()">
+            <i class="fa fa-cog"></i>
+        </button>
+    </div>
+
+    <div id="containerPesquisa" class="pesquisa-glow mb-6">
+        <div class="relative rounded-xl border-2 border-verdeNeon/50 bg-cardEscuro dark:bg-cardClaro">
+            <input type="text" id="busca" placeholder="Pesquisar itens..." class="w-full bg-transparent py-3 px-4 pr-10 text-textoEscuro dark:text-textoClaro placeholder:text-textoEscuro/50 dark:placeholder:text-textoClaro/50 outline-none text-sm">
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-textoEscuro/60 dark:text-textoClaro/60 hover:text-verdeNeon">
+                <i class="fa fa-search text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex justify-center mb-6">
+        <div class="bg-white dark:bg-cinzaClaro text-fundoEscuro dark:text-fundoClaro font-bold px-10 py-2 rounded-lg text-base shadow-md">ITENS</div>
+    </div>
+
+    <div id="lista-itens" class="grid grid-cols-4 gap-4 gap-y-6 mb-10">
+        <p class="col-span-4 text-center text-textoEscuro/50 dark:text-textoClaro/50 py-8 text-sm">Carregando itens...</p>
+    </div>
+
+    <div id="modalItem" class="fixed inset-0 bg-black/90 dark:bg-white/90 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-cardEscuro dark:bg-cardClaro rounded-2xl w-full max-w-xs p-4 border border-roxoNeon/30 shadow-xl relative">
+            <button onclick="fecharModal()" class="btn-fechar-modal">×</button>
+
+            <div class="w-full h-40 bg-fundoEscuro/50 dark:bg-fundoClaro/50 rounded-xl flex items-center justify-center mb-4 overflow-hidden relative">
+                <img id="imgModal" src="" alt="" class="max-w-full max-h-full object-contain">
+                <button id="btnVerVideo" onclick="abrirVideo()" class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-youtube flex items-center justify-center text-white shadow-lg hover:scale-105 transition hidden">
+                    <i class="fa fa-youtube-play text-lg"></i>
+                </button>
+            </div>
+
+            <h3 id="nomeItemModal" class="text-lg font-bold text-center text-textoEscuro dark:text-textoClaro mb-4"></h3>
+
+            <div id="blocoIndisponivel" class="hidden mt-4">
+                <div class="bg-amarelo/10 border border-amarelo/40 p-4 rounded-xl text-center">
+                    <i class="fa fa-clock-o text-3xl text-amarelo mb-2"></i>
+                    <h4 class="text-amarelo font-bold text-lg">EM BREVE</h4>
+                    <p class="text-textoEscuro/80 dark:text-textoClaro/80 text-sm mt-1">
+                        Esse item ainda não foi liberado. Fique de olho no canal!
+                    </p>
+                </div>
+            </div>
+
+            <div id="blocoMeta" class="hidden mt-4">
+                <div class="bg-azulMeta/10 border border-azulMeta/40 p-4 rounded-xl">
+                    <div class="text-center mb-3">
+                        <i id="iconeMeta" class="fa fa-thumbs-up text-3xl text-azulMeta mb-2"></i>
+                        <h4 id="tituloMeta" class="text-azulMeta font-bold text-lg">META AINDA NÃO ALCANÇADA</h4>
+                        <p id="textoMeta" class="text-sm mt-1">
+                            <span id="valorAtualMeta">0</span> / <span id="valorTotalMeta">0</span>
+                        </p>
+                    </div>
+                    <div class="barra-meta">
+                        <div id="barraMetaProgresso" class="progresso-meta" style="width: 0%"></div>
+                    </div>
+                    <p class="text-center text-xs text-textoEscuro/70 dark:text-textoClaro/70 mt-3">
+                        Ao bater a meta, o código será liberado automaticamente!
+                    </p>
+                </div>
+            </div>
+
+            <div id="blocoDisponivel" class="hidden space-y-3 mt-4">
+                <div id="blocoDesafio" class="bg-fundoEscuro/70 dark:bg-fundoClaro/70 p-3 rounded-xl border border-roxoNeon/20 space-y-3">
+                    <p class="text-roxoNeon font-bold text-center mb-2">🔓 Para liberar o código:</p>
+                    <div id="passoYt" class="border border-cinza/50 dark:border-cinzaClaro/50 rounded-lg p-2 flex items-center justify-between">
+                        <span class="text-sm">1️⃣ Se inscrever no YouTube</span>
+                        <button id="btnYt" onclick="abrirYoutube()" class="bg-youtube/90 hover:bg-youtube text-white px-2 py-1 rounded text-xs">IR</button>
+                    </div>
+                    <div id="passoDiscord" class="border border-cinza/50 dark:border-cinzaClaro/50 rounded-lg p-2 flex items-center justify-between">
+                        <span class="text-sm">2️⃣ Entrar no Discord</span>
+                        <button id="btnDiscord" onclick="abrirDiscord()" class="bg-discord/90 hover:bg-discord text-white px-2 py-1 rounded text-xs">IR</button>
+                    </div>
+                    <button id="btnLiberar" onclick="liberarCodigo()" disabled class="w-full bg-cinza/70 dark:bg-cinzaClaro/70 text-textoEscuro/60 dark:text-textoClaro/60 font-bold py-2 rounded-lg text-sm cursor-not-allowed mt-2 transition-all">
+                        ✅ CONFIRMAR E LIBERAR
+                    </button>
+                </div>
+                <div id="codigoLiberado" class="hidden mt-4 space-y-3">
+                    <p class="text-verdeNeon text-center font-semibold text-sm">✅ LIBERADO COM SUCESSO!</p>
+                    <div class="bg-fundoEscuro/80 dark:bg-fundoClaro/80 p-3 rounded-lg text-center text-textoEscuro dark:text-textoClaro font-mono text-sm break-all border border-verdeNeon/30" id="codigoExibido"></div>
+                    <button onclick="copiarCodigo()" class="w-full bg-verdeNeon/20 hover:bg-verdeNeon/40 text-white dark:text-black py-2 rounded-lg text-sm transition">📋 Copiar Código</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalVideo" class="fixed inset-0 bg-black/90 dark:bg-white/90 flex items-center justify-center z-[60] hidden p-4">
+        <div class="bg-cardEscuro dark:bg-cardClaro rounded-xl w-full max-w-sm p-4 border border-roxoNeon/30 relative">
+            <button onclick="fecharVideo()" class="btn-fechar-modal">×</button>
+            <h4 class="text-center text-textoEscuro dark:text-textoClaro font-bold mb-3">Tutorial do Item</h4>
+            <div class="aspect-video bg-fundoEscuro/50 dark:bg-fundoClaro/50 rounded-lg overflow-hidden">
+                <iframe id="iframeVideo" width="100%" height="100%" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="telaConfig" class="fixed inset-0 bg-black/90 dark:bg-white/90 flex items-center justify-center z-[70] hidden p-4">
+        <div class="bg-cardEscuro dark:bg-cardClaro rounded-xl w-full max-w-xs p-5 border border-roxoNeon/30 relative">
+            <button onclick="fecharConfig()" class="btn-fechar-modal">×</button>
+            <h3 class="text-center text-xl font-bold text-textoEscuro dark:text-textoClaro mb-4">⚙️ Configurações</h3>
+            <button onclick="alternarTema()" class="w-full mb-4 flex items-center justify-center gap-3 bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 p-3 rounded-xl transition-all">
+                <i class="fa fa-adjust text-xl"></i>
+                <span id="textoTema">Tela: Escura</span>
+            </button>
+            <button onclick="alternarEfeitoRGB()" class="w-full mb-4 flex items-center justify-center gap-3 bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 p-3 rounded-xl transition-all">
+                <i class="fa fa-palette text-xl"></i>
+                <span id="textoRGB">Efeito RGB: Ativado</span>
+            </button>
+            <p class="text-center text-textoEscuro/70 dark:text-textoClaro/70 text-sm mt-2">Site criado por Shazam</p>
+        </div>
+    </div>
+
+    <div id="aviso" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-verdeNeon text-black font-bold px-4 py-2 rounded-lg shadow-lg hidden z-50 text-sm">✅ Feito!</div>
+
+    <script>
+        // ✅ SEUS DADOS JÁ INSERIDOS CORRETAMENTE
+        const ID_PLANILHA = "1qVFFrI8lmNO1BFKjVzun0c1k_iBXeT5-8ooxPkSxUG4";
+        const ABA = "Página1";
+        const CANAL_YT = "https://www.youtube.com/@SHAZAM2836";
+        const LINK_DISCORD = "https://discord.gg/sagDUm8xX";
+
+        let dadosPlanilha = [], itemAtual = {};
+        let passoYtFeito = false, passoDiscordFeito = false;
+        let rgbAtivado = true;
+
+        if(localStorage.getItem("tema") === "claro") {
+            document.documentElement.classList.remove("dark");
+            document.getElementById("textoTema").textContent = "Tela: Clara";
+        } else {
+            document.documentElement.classList.add("dark");
+            document.getElementById("textoTema").textContent = "Tela: Escura";
+        }
+
+        if(localStorage.getItem("rgbAtivado") === "false") {
+            rgbAtivado = false;
+            desativarEfeitoRGB();
+        }
+
+        window.addEventListener("load", () => {
+            let porcentagem = 0;
+            const barra = document.getElementById("barraProgresso");
+            const texto = document.getElementById("textoPorcentagem");
+            const intervalo = setInterval(() => {
+                porcentagem += 5;
+                barra.style.width = porcentagem + "%";
+                texto.textContent = porcentagem + "%";
+                if(porcentagem >= 100) {
+                    clearInterval(intervalo);
+                    setTimeout(() => {
+                        document.getElementById("telaEntrada").classList.add("sair");
+                        carregarItens();
+                    }, 400);
+                }
+            }, 60);
+            document.getElementById("busca").addEventListener("input", renderizarItens);
+        });
+
+        function carregarItens() {
+            const url = `https://opensheet.elk.sh/${ID_PLANILHA}/${ABA}`;
+            fetch(url)
+                .then(res => {
+                    if(!res.ok) throw new Error("Erro ao acessar planilha");
+                    return res.json();
+                })
+                .then(dados => {
+                    dadosPlanilha = dados.filter(item => item.nome && item.nome.trim() !== "");
+                    renderizarItens();
+                })
+                .catch(err => {
+                    console.error("Erro:", err);
+                    document.getElementById("lista-itens").innerHTML = `
+                        <p class="col-span-4 text-center text-vermelho py-8 px-4">
+                            ❌ Não foi possível carregar<br>
+                            Verifique se a planilha está compartilhada como "Qualquer pessoa pode ver"
+                        </p>
+                    `;
+                });
+        }
+
+        function renderizarItens() {
+            const termo = document.getElementById("busca").value.toLowerCase().trim();
+            const container = document.getElementById("lista-itens");
+            container.innerHTML = "";
+            const filtrados = dadosPlanilha.filter(item => item.nome.toLowerCase().includes(termo));
+            if(filtrados.length === 0) {
+                container.innerHTML = `<p class="col-span-4 text-center text-textoEscuro/50 dark:text-textoClaro/50 py-8 text-sm">Nenhum item encontrado.</p>`;
+                return;
+            }
+            filtrados.forEach((item, indice) => {
+                const estaDisponivel = item.status?.toLowerCase() === "disponivel";
+                const div = document.createElement("div");
+                div.className = `flex flex-col items-center gap-2 cursor-pointer ${!estaDisponivel ? "item-indisponivel" : ""}`;
+                div.onclick = () => abrirModal(item, indice);
+                div.innerHTML = `
+                    <div class="w-16 h-16 rounded-full bg-cardEscuro dark:bg-cardClaro ${estaDisponivel && rgbAtivado ? 'item-glow' : 'item-sem-glow'} overflow-hidden">
+                        <img src="${item.url || 'https://cdn-icons-png.flaticon.com/512/1059/105917.png'}" alt="${item.nome}" class="w-full h-full object-cover">
+                    </div>
+                    <span class="nome-item text-textoEscuro dark:text-textoClaro">${item.nome}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function abrirModal(item, indice) {
+            itemAtual = {...item, indice};
+            const estaDisponivel = item.status?.toLowerCase() === "disponivel";
+            
+            const metaLikes = parseInt(item.meta_likes) || 0;
+            const likesAtual = parseInt(item.likes_atual) || 0;
+            const metaComentarios = parseInt(item.meta_comentarios) || 0;
+            const comentariosAtual = parseInt(item.comentarios_atual) || 0;
+
+            let usaMeta = false;
+            let bateuMeta = true;
+            let tipoMeta = "";
+            let atual = 0;
+            let total = 0;
+
+            if(metaComentarios > 0) {
+                usaMeta = true;
+                tipoMeta = "comentários";
+                atual = comentariosAtual;
+                total = metaComentarios;
+                bateuMeta = comentariosAtual >= metaComentarios;
+            } else if(metaLikes > 0) {
+                usaMeta = true;
+                tipoMeta = "curtidas";
+                atual = likesAtual;
+                total = metaLikes;
+                bateuMeta = likesAtual >= metaLikes;
+            }
+
+            const liberado = bateuMeta && localStorage.getItem(`liberado_${indice}`) === "true";
+
+            document.getElementById("imgModal").src = item.url || "";
+            document.getElementById("nomeItemModal").textContent = item.nome;
+
+            document.getElementById("blocoIndisponivel").classList.add("hidden");
+            document.getElementById("blocoMeta").classList.add("hidden");
+            document.getElementById("blocoDisponivel").classList.add("hidden");
+            document.getElementById("btnVerVideo").classList.add("hidden");
+
+            if(!estaDisponivel) {
+                document.getElementById("blocoIndisponivel").classList.remove("hidden");
+            } else if(usaMeta && !bateuMeta) {
+                document.getElementById("iconeMeta").className = tipoMeta === "comentários" ? "fa fa-comments text-3xl text-azulMeta mb-2" : "fa fa-thumbs-up text-3xl text-azulMeta mb-2";
+                document.getElementById("tituloMeta").textContent = `META DE ${tipoMeta.toUpperCase()} NÃO ALCANÇADA`;
+                document.getElementById("textoMeta").innerHTML = `<span>${atual}</span> / <span>${total}</span> ${tipoMeta}`;
+                const porcentagem = Math.min(Math.round((atual / total) * 100), 100);
+                document.getElementById("barraMetaProgresso").style.width = `${porcentagem}%`;
+                document.getElementById("blocoMeta").classList.remove("hidden");
+            } else {
+                document.getElementById("blocoDisponivel").classList.remove("hidden");
+                if(liberado) {
+                    document.getElementById("blocoDesafio").classList.add("hidden");
+                    document.getElementById("codigoLiberado").classList.remove("hidden");
+                    document.getElementById("codigoExibido").textContent = item.codigo || "—";
+                } else {
+                    document.getElementById("blocoDesafio").classList.remove("hidden");
+                    document.getElementById("codigoLiberado").classList.add("hidden");
+                    passoYtFeito = false;
+                    passoDiscordFeito = false;
+                    document.getElementById("passoYt").classList.remove("passo-feito");
+                    document.getElementById("passoDiscord").classList.remove("passo-feito");
+                    document.getElementById("btnYt").textContent = "IR";
+                    document.getElementById("btnDiscord").textContent = "IR";
+                    document.getElementById("btnLiberar").disabled = true;
+                    document.getElementById("btnLiberar").classList.remove("bg-verdeNeon/80", "hover:bg-verdeNeon", "text-black");
+                    document.getElementById("btnLiberar").classList.add("bg-cinza/70", "cursor-not-allowed");
+                }
+                if(item.video_url && item.video_url.trim() !== "") {
+                    document.getElementById("btnVerVideo").classList.remove("hidden");
+                    document.getElementById("btnVerVideo").onclick = () => abrirVideo(item.video_url);
+                }
+            }
+        }
+
+        function abrirYoutube() {
+            window.open(CANAL_YT, "_blank");
+            setTimeout(() => {
+                passoYtFeito = true;
+                document.getElementById("passoYt").classList.add("passo-feito");
+                document.getElementById("btnYt").innerHTML = "✔️ FEITO";
+                verificarPassos();
+            }, 800);
+        }
+
+        function abrirDiscord() {
+            window.open(LINK_DISCORD, "_blank");
+            setTimeout(() => {
+                passoDiscordFeito = true;
+                document.getElementById("passoDiscord").classList.add("passo-feito");
+                document.getElementById("btnDiscord").innerHTML = "✔️ FEITO";
+                verificarPassos();
+            }, 800);
+        }
+
+        function verificarPassos() {
+            if(passoYtFeito && passoDiscordFeito) {
+                document.getElementById("btnLiberar").disabled = false;
+                document.getElementById("btnLiberar").classList.remove("bg-cinza/70", "cursor-not-allowed");
+                document.getElementById("btnLiberar").classList.add("bg-verdeNeon/80", "hover:bg-verdeNeon", "text-black");
+            }
+        }
+
+        function liberarCodigo() {
+            localStorage.setItem(`liberado_${itemAtual.indice}`, "true");
+            document.getElementById("blocoDesafio").classList.add("hidden");
+            document.getElementById("codigoLiberado").classList.remove("hidden");
+            document.getElementById("codigoExibido").textContent = itemAtual.codigo || "—";
+            mostrarAviso("✅ Código liberado!");
+        }
+
+        function copiarCodigo() {
+            navigator.clipboard.writeText(itemAtual.codigo || "");
+            mostrarAviso("📋 Código copiado!");
+        }
+
+        function abrirVideo(url) {
+            let embed = url.trim();
+            if(embed.includes("watch")) {
+                const id = embed.split("v=")[1].split("&")[0];
+                embed = `https://www.youtube.com/embed/${id}`;
+            } else if(embed.includes("youtu.be/")) {
+                const id = embed.split("youtu.be/")[1].split("?")[0];
+                embed = `https://www.youtube.com/embed/${id}`;
+            }
+            document.getElementById("iframeVideo").src = embed;
+            document.getElementById("modalVideo").classList.remove("hidden");
+        }
+
+        function alternarTema() {
+            const estaEscuro = !document.documentElement.classList.contains("dark");
+            document.documentElement.classList.toggle("dark");
+            document.getElementById("textoTema").textContent = estaEscuro ? "Tela: Clara" : "Tela: Escura";
+            localStorage.setItem("tema", estaEscuro ? "claro" : "escuro");
+        }
+
+        function alternarEfeitoRGB() {
+            rgbAtivado = !rgbAtivado;
+            localStorage.setItem("rgbAtivado", rgbAtivado);
+            const cab = document.getElementById("cabecalho");
+            const pesq = document.getElementById("containerPesquisa");
+            if(rgbAtivado) {
+                cab.classList.replace("cabecalho-sem-glow", "cabecalho-glow");
+                pesq.classList.replace("pesquisa-sem-glow", "pesquisa-glow");
+                document.getElementById("textoRGB").textContent = "Efeito RGB: Ativado";
+            } else {
+                cab.classList.replace("cabecalho-glow", "cabecalho-sem-glow");
+                pesq.classList.replace("pesquisa-glow", "pesquisa-sem-glow");
+                document.getElementById("textoRGB").textContent = "Efeito RGB: Desativado";
+            }
+            renderizarItens();
+        }
+
+        function desativarEfeitoRGB() {
+            document.getElementById("cabecalho").classList.replace("cabecalho-glow", "cabecalho-sem-glow");
+            document.getElementById("containerPesquisa").classList.replace("pesquisa-glow", "pesquisa-sem-glow");
+            document.getElementById("textoRGB").textContent = "Efeito RGB: Desativado";
+        }
+
+        function fecharModal() { document.getElementById("modalItem").classList.add("hidden"); }
+        function fecharVideo() { document.getElementById("modalVideo").classList.add("hidden"); document.getElementById("iframeVideo").src = ""; }
+        function abrirConfig() { document.getElementById("telaConfig").classList.remove("hidden"); }
+        function fecharConfig() { document.getElementById("telaConfig").classList.add("hidden"); }
+        function mostrarAviso(texto) {
+            const aviso = document.getElementById("aviso");
+            aviso.textContent = texto;
+            aviso.classList.remove("hidden");
+            setTimeout(() => aviso.classList.add("hidden"), 2500);
+        }
+    </script>
+</body>
+</html>
